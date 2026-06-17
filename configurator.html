@@ -11,7 +11,7 @@
         .configurator { flex: 1; }
         
         .status-panel { display: flex; gap: 10px; margin-bottom: 20px; }
-        .budget-box { flex: 1; background: #333; padding: 15px; border-radius: 5px; border-left: 5px solid #ff3333; }
+        .budget-box { flex: 1; background: #333; padding: 15px; border-radius: 5px; border-left: 5px solid #ff3333; transition: border-color 0.3s; }
         .budget-box.funded { border-left-color: #00ff00; }
         .timer-box { flex: 1; background: #333; padding: 15px; border-radius: 5px; border-left: 5px solid #aaa; text-align: center; }
         .timer-box.active { border-left-color: #ff3333; animation: blink 1s infinite; }
@@ -21,15 +21,17 @@
         .money.red { color: #ff3333; }
 
         .preview-zone { flex: 1; background: #151515; padding: 15px; border: 1px dashed #444; border-radius: 5px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .preview-slot { background: #2a2a2a; border: 1px solid #3d3d3d; border-radius: 4px; padding: 8px; text-align: center; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; }
-        .preview-slot span { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 5px; }
-        .preview-slot img { max-width: 100%; max-height: 80px; object-fit: contain; display: block; margin: auto; background: #222; border-radius: 3px; }
-        .slot-price { font-size: 11px; color: #ffaa00; margin-top: 5px; }
+        .preview-slot { background: #2a2a2a; border: 1px solid #3d3d3d; border-radius: 4px; padding: 8px; text-align: center; min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
+        .preview-slot span { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .preview-slot img { max-width: 100%; max-height: 80px; object-fit: contain; display: none; margin: auto; background: #222; border-radius: 3px; }
+        .preview-slot img.active { display: block; }
+        .slot-price { font-size: 11px; color: #ffaa00; margin-top: 5px; display: none; }
+        .slot-price.active { display: block; }
 
-        .ad-sidebar { flex: 0 0 300px; background: #333; border: 3px solid #ff4500; padding: 5px; border-radius: 5px; cursor: pointer; transition: transform 0.2s; }
-        .ad-sidebar:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(255, 69, 0, 0.4); }
+        /* Сайдбар теперь без мигающих подсказок */
+        .ad-sidebar { flex: 0 0 300px; background: #333; border: 1px solid #444; padding: 5px; border-radius: 5px; cursor: pointer; transition: transform 0.2s; }
+        .ad-sidebar:hover { transform: scale(1.01); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
         .ad-sidebar img { width: 100%; height: auto; display: block; border-radius: 3px; }
-        .ad-hint { text-align: center; color: #ff4500; font-size: 11px; font-weight: bold; margin-top: 5px; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 100; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         .modal-content { background: #f4f6f9; color: #333; padding: 0; border-radius: 8px; width: 100%; max-width: 440px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow: hidden; }
@@ -62,10 +64,13 @@
 
         .component-select { background: #333; color: #fff; padding: 8px; margin: 5px 0 15px 0; border: 1px solid #555; width: 100%; font-family: monospace; }
         button.start-btn { background: #ff4500; color: white; padding: 15px; border: none; font-size: 18px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
+        button:hover { background: #ff6347; }
         button:disabled { background: #444; color: #888; cursor: not-allowed; }
+        
         #log { background: #000; border: 1px solid #333; padding: 15px; margin-top: 15px; min-height: 120px; color: #00ff00; white-space: pre-line; grid-column: span 2; }
         
         .error { color: #ff3333; font-weight: bold; }
+        .success-gold { color: #ffaa00; font-weight: bold; }
         .boom { background: #ff3333 !important; animation: shake 0.5s infinite; }
         @keyframes shake { 0% { transform: translate(1px, 1px); } 10% { transform: translate(-1px, -2px); } 100% { transform: translate(1px, -2px); } }
         @keyframes blink { 50% { border-left-color: transparent; } }
@@ -74,7 +79,7 @@
 <body>
 
 <div style="max-width: 1400px; margin: 0 auto; margin-bottom: 15px;">
-    <a href="index.html" style="color:#aaa; text-decoration:none;">← На главную к выбору стула</a>
+    <a href="index.html" style="color:#aaa; text-decoration:none;">← Вернуться к Соглашению о Душе</a>
 </div>
 
 <div class="wrapper">
@@ -82,7 +87,7 @@
         <div class="configurator">
             <div class="status-panel">
                 <div id="budgetBlock" class="budget-box">
-                    Твой budget: <span id="user-budget">9 500</span> руб. <br>
+                    Твой бюджет: <span id="user-budget">12 500</span> руб. <br>
                     Стоимость: <span id="total-cost">0</span> руб.
                 </div>
                 <div id="timerBlock" class="timer-box">
@@ -93,42 +98,49 @@
 
             <label>Процессор:</label>
             <select id="cpu" class="component-select" onchange="updateUI()">
+                <option value="none" data-price="0">-- Выбрать --</option>
                 <option value="xeon" data-power="130" data-price="800" data-img="img/cpu_xeon.png">Xeon E5-2640 (800 руб. / Серверный дед)</option>
                 <option value="ryzen" data-power="65" data-price="6500" data-img="img/cpu_ryzen.png">Ryzen 7 2700 (6 500 руб. / Дорого, богато)</option>
             </select>
 
             <label>Материнская плата:</label>
             <select id="mobo" class="component-select" onchange="updateUI()">
+                <option value="none" data-price="0">-- Выбрать --</option>
                 <option value="anus" data-price="1800" data-img="img/mobo_anus.png">Б/У ANUS (1 800 руб. / Залита КПТ-8)</option>
                 <option value="huananzhi" data-price="4300" data-img="img/mobo_huanan.png">Huananzhi X99 BD4 (4 300 руб. / Икона стиля)</option>
             </select>
 
             <label>Охлаждение:</label>
             <select id="cooler" class="component-select" onchange="updateUI()">
+                <option value="none" data-price="0">-- Выбрать --</option>
                 <option value="box" data-cool="30" data-price="400" data-img="img/cooler_box.png">Боксовый кулер AMD (400 руб. / Кусок люминия)</option>
                 <option value="snowman" data-cool="90" data-price="1300" data-img="img/cooler_snowman.png">Кулер Снеговик (1 300 руб. / Выжигает глаза)</option>
             </select>
 
             <label>Оперативная память:</label>
             <select id="ram" class="component-select" onchange="updateUI()">
+                <option value="none" data-price="0">-- Выбрать --</option>
                 <option value="server" data-price="600" data-img="img/ram_server.png">Серверная DDR3 ECC REG (600 руб. / Медленная халява)</option>
                 <option value="amd_ram" data-price="3200" data-img="img/ram_amd.png">AMD Radeon DDR4 16GB (3 200 руб. / Синие экраны)</option>
             </select>
 
             <label>Видеокарта:</label>
             <select id="gpu" class="component-select" onchange="updateUI()">
+                <option value="none" data-price="0">-- Выбрать --</option>
                 <option value="rx580" data-power="185" data-price="4500" data-img="img/gpu_rx580.png">RX 580 (4 500 руб. / Шахтер со стажем)</option>
                 <option value="vega" data-power="295" data-price="9500" data-img="img/gpu_vega.png">Vega 56 (9 500 руб. / Турбина от Су-27)</option>
             </select>
 
             <label>Накопитель:</label>
             <select id="ssd" class="component-select" onchange="updateUI()">
+                <option value="none" data-price="0">-- Выбрать --</option>
                 <option value="hdd_seagate" data-price="700" data-img="img/hdd_seagate.png">Б/У HDD Seagate 500GB (700 руб. / Хрустит как сухарь)</option>
                 <option value="amd_ssd" data-price="1900" data-img="img/ssd_amd.png">AMD Radeon SSD 240GB (1 900 руб. / Отвал контроллера)</option>
             </select>
 
             <label>Блок питания:</label>
             <select id="psu" class="component-select" onchange="updateUI()">
+                <option value="none" data-price="0">-- Выбрать --</option>
                 <option value="normal" data-boom="5" data-price="1200" data-img="img/psu_noname.png">Нонейм китаец (1 200 руб. / Пахнет заводом)</option>
                 <option value="kcas" data-boom="85" data-price="3400" data-img="img/psu_kcas.png">Aerocool KCAS 1000W (3 400 руб. / Бабах 85%)</option>
             </select>
@@ -144,7 +156,7 @@
             <div class="preview-slot"><span>Видеокарта</span><img id="gpu-preview" src=""><div id="gpu-price" class="slot-price"></div></div>
             <div class="preview-slot"><span>Накопитель</span><img id="ssd-preview" src=""><div id="ssd-price" class="slot-price"></div></div>
             <div class="preview-slot"><span>Блок питания</span><img id="psu-preview" src=""><div id="psu-price" class="slot-price"></div></div>
-            <div class="preview-slot" style="background:#1d1d1d; justify-content:center; color:#555; font-size:12px;">Корпус из коробки от бананов (0 руб.)</div>
+            <div class="preview-slot" style="background:#1d1d1d; justify-content:center; color:#555; font-size:12px; height:120px; box-sizing:border-box; border: 1px solid #3d3d3d;">Корпус из коробки от бананов (0 руб.)</div>
             
             <div id="log">Ожидание сборки...</div>
         </div>
@@ -152,14 +164,13 @@
 
     <div class="ad-sidebar" onclick="openModal()">
         <img src="ad.png" alt="Спонсор">
-        <div class="ad-hint">👉 ТЫЛОВЫЕ ВАКАНСИИ ТУТ (КЛИК) 👈</div>
     </div>
 </div>
 
 <div id="contractModal" class="modal">
     <div id="modalBox" class="modal-content">
         <div class="modal-body">
-            <a href="#" class="meme-nav" onclick="closeModal(event)">← Вернуться на главную к выбору стула</a>
+            <a href="#" class="meme-nav" onclick="closeModal(event)">← Вернуться к Соглашению о Душе</a>
             
             <div class="badge-green">Вакансия в тылу</div>
             <h2 class="modal-title-blue">Контрактная служба в МинОбороны</h2>
@@ -184,7 +195,7 @@
 </div>
 
 <script>
-let userBudget = 9500;
+let userBudget = 12500;
 let contractSigned = false;
 let timeLeft = 900;
 let timerInterval = null;
@@ -192,14 +203,28 @@ let timerInterval = null;
 function updateUI() {
     const components = ['cpu', 'mobo', 'cooler', 'ram', 'gpu', 'ssd', 'psu'];
     let total = 0;
+    let allSelected = true;
 
     components.forEach(id => {
         const select = document.getElementById(id);
+        const imgTag = document.getElementById(`${id}-preview`);
+        const priceTag = document.getElementById(`${id}-price`);
+        
         if (select) {
             const option = select.selectedOptions[0];
-            total += parseInt(option.dataset.price) || 0;
-            document.getElementById(`${id}-preview`).src = option.dataset.img || '';
-            document.getElementById(`${id}-price`).innerText = `${option.dataset.price} руб.`;
+            const price = parseInt(option.dataset.price) || 0;
+            total += price;
+
+            if (select.value === 'none') {
+                allSelected = false;
+                imgTag.classList.remove('active');
+                priceTag.classList.remove('active');
+            } else {
+                imgTag.src = option.dataset.img || '';
+                imgTag.classList.add('active');
+                priceTag.innerText = `${price} руб.`;
+                priceTag.classList.add('active');
+            }
         }
     });
 
@@ -209,11 +234,16 @@ function updateUI() {
 
     totalCostSpan.innerText = total.toLocaleString();
 
+    // Подсказки удалены, кнопка просто блокируется без инструкций
     if (total > userBudget) {
         totalCostSpan.className = 'money red';
         budgetBlock.classList.remove('funded');
         startBtn.disabled = true;
-        startBtn.innerText = "НЕТ ДЕНЕГ (ПОДПИШИ КОНТРАКТ СПРАВА)";
+        startBtn.innerText = "НЕДОСТАТОЧНО СРЕДСТВ";
+    } else if (!allSelected) {
+        startBtn.disabled = true;
+        startBtn.innerText = "ВЫБЕРИ ВСЕ КОМПЛЕКТУЮЩИЕ";
+        totalCostSpan.className = 'money';
     } else {
         totalCostSpan.className = 'money';
         budgetBlock.classList.add('funded');
@@ -251,7 +281,7 @@ function signContract() {
             <button class="btn-contract" style="background:#2ecc71; border-bottom:4px solid #27ae60;" onclick="closeModalAndStartTimer()">ЗАКРЫТЬ ОКНО И СЛЕДОВАТЬ К КАМАЗУ</button>
             
             <div class="footer-note">
-                *Бронежилет 2-го класса (слегка б/у, со следами осколков) будет выдан на месте. Удачи, не штурмовик!
+                *Бронежилет 2-го класса (слегка б/у, со следами осколков) будет выдан на месте. Бюджет на ПК безлимитный! Удачи!
             </div>
         </div>
     `;
@@ -260,13 +290,13 @@ function signContract() {
 function closeModalAndStartTimer() {
     document.getElementById('contractModal').style.display = 'none';
     contractSigned = true;
-    userBudget = 20000;
+    userBudget = 3750000;
     
     document.getElementById('user-budget').innerText = userBudget.toLocaleString();
     document.getElementById('user-budget').style.color = '#00ff00';
     
     const log = document.getElementById('log');
-    log.innerHTML = "<span class='error'>🚨 СИСТЕМА АКТИВИРОВАНА! Баланс пополнен на 20 000 руб. \nКАМАЗ укомплектован. У тебя ровно 15 минут на сборку этой помойки, иначе поедешь без неё!</span>\n";
+    log.innerHTML = "<span class='error'>🚨 КОНТРАКТ АКТИВИРОВАН! Баланс пополнен на 3.75 млн руб. \nУ тебя ровно 15 минут на сборку чего угодно, иначе поедешь без него!</span>\n";
     
     document.getElementById('timerBlock').classList.add('active');
     
@@ -279,7 +309,7 @@ function closeModalAndStartTimer() {
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
             document.getElementById('startBtn').disabled = true;
-            document.getElementById('log').innerHTML = "<span class='error'>🪖 ВРЕМЯ ВЫШЛО! Снаружи посигналили. Старшина выкинул картонный стенд в окно, а тебя увёл к грузовику. GAME OVER.</span>";
+            document.getElementById('log').innerHTML = "<span class='error'>🪖 ВРЕМЯ ВЫШЛО! У грузовика закончилось терпение. GAME OVER.</span>";
         }
     }, 1000);
     
@@ -287,7 +317,7 @@ function closeModalAndStartTimer() {
 }
 
 function launchPC() {
-    if (timeLeft <= 0) return;
+    if (timeLeft <= 0 && contractSigned) return;
     
     const btn = document.getElementById('startBtn');
     const log = document.getElementById('log');
@@ -301,7 +331,7 @@ function launchPC() {
     const ram = document.getElementById('ram').value;
 
     if ((cpu === 'xeon' && mobo === 'anus') || (cpu === 'ryzen' && mobo === 'huananzhi') || (ram === 'server' && mobo === 'anus')) {
-        log.innerHTML = "<span class='error'>❌ Сборка не заводится! Железо конфликтует. Время поджимает, меняй детали!</span>";
+        log.innerHTML = "<span class='error'>❌ Сборка не заводится! Железо конфликтует! Время идет!</span>";
         return;
     }
 
@@ -309,15 +339,19 @@ function launchPC() {
     let boomChance = parseInt(psu.dataset.boom);
     if (gpu.value === 'vega' && psu.value === 'kcas') boomChance = 100;
 
-    log.innerHTML += "⚡ Проверка цепей питания...\n";
+    log.innerHTML += "⚡ Проверка цепей питания отверткой...\n";
     btn.classList.add('boom');
 
     setTimeout(() => {
         btn.classList.remove('boom');
         
         if (Math.random() * 100 < boomChance) {
-            log.innerHTML += `<span class='error'>💥 БАБАХ! Вспышка, хлопок! Блок питания KCAS эффектно взорвался и уничтожил материнку. Стенд сгорел. А тебе через 10 минут в танк. Не твой день!</span>`;
-            clearInterval(timerInterval);
+            log.innerHTML += `<span class='error'>💥 БАБАХ! Вспышка, хлопок! Блок питания KCAS эффектно взорвался и уничтожил всё железо. Стенд сгорел. У тебя есть еще деньги (если подписан контракт), но времени почти нет!</span>`;
+            if (contractSigned && timeLeft <= 120) {
+                 clearInterval(timerInterval);
+                 document.getElementById('log').innerHTML += "<span class='error'>\nВремени на пересборку уже нет. GAME OVER.</span>";
+                 document.getElementById('startBtn').disabled = true;
+            }
             return;
         }
 
@@ -326,9 +360,9 @@ function launchPC() {
             return;
         }
 
-        clearInterval(timerInterval);
+        if (timerInterval) clearInterval(timerInterval);
         const fps = Math.floor(Math.random() * 20) + 25;
-        log.innerHTML += `<span class='success-gold'>🎉 ПОБЕДА! Комп завелся и выдает стабильные ${fps} FPS. Хватай картонку, прыгай в танк, будет во что поиграть в затишье между позициями!</span>`;
+        log.innerHTML += `<span class='success-gold'>🎉 ПОБЕДА! Комп завелся и выдает стабильные ${fps} FPS. Хватай картонку и бегом!</span>`;
     }, 2000);
 }
 

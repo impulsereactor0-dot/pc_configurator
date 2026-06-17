@@ -4,28 +4,103 @@
     <meta charset="UTF-8">
     <title>Бич-ПК Конфигуратор 2026 — Главная</title>
     <style>
-        body { background: #1a1a1a; color: #fff; font-family: monospace; padding: 20px; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .welcome-container { max-width: 500px; background: #222; padding: 30px; border-radius: 8px; border: 1px solid #333; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        h1 { color: #ff4500; font-size: 24px; margin-bottom: 10px; }
-        p { color: #aaa; font-size: 14px; line-height: 1.5; }
-        .ad-zone { margin: 25px 0; border: 2px solid #ff4500; padding: 5px; background: #333; border-radius: 4px; }
-        .ad-zone img { width: 100%; height: auto; display: block; border-radius: 2px; }
-        .btn-start { display: block; background: #00ff00; color: #000; padding: 15px; text-decoration: none; font-size: 18px; font-weight: bold; border-radius: 4px; transition: background 0.2s; }
-        .btn-start:hover { background: #00cc00; }
+        body { background: #1a1a1a; color: #fff; font-family: monospace; padding: 20px; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        
+        /* Главная карточка */
+        .welcome-container { max-width: 500px; background: #222; padding: 30px; border-radius: 8px; border: 1px solid #333; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.5); position: relative; }
+        h1 { color: #ff4500; font-size: 24px; margin-bottom: 15px; }
+        p { color: #aaa; font-size: 14px; line-height: 1.5; margin-bottom: 25px; }
+        
+        .btn-start { display: block; background: #555; color: #888; padding: 15px; text-decoration: none; font-size: 18px; font-weight: bold; border-radius: 4px; pointer-events: none; transition: background 0.2s, color 0.2s; }
+        .btn-start.active { background: #00ff00; color: #000; pointer-events: auto; }
+        .btn-start.active:hover { background: #00cc00; }
+
+        /* Общие стили для всплывающих окон */
+        .pop-window { position: fixed; background: #2a2a2a; border: 2px solid #333; border-radius: 6px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); z-index: 100; max-width: 360px; font-size: 13px; line-height: 1.4; }
+        .pop-title { font-weight: bold; color: #ff4500; margin-bottom: 10px; text-transform: uppercase; font-size: 14px; }
+        .pop-buttons { display: flex; gap: 10px; margin-top: 15px; justify-content: flex-end; }
+        .btn-pop { padding: 8px 15px; border: 1px solid #555; background: #333; color: #fff; cursor: pointer; font-weight: bold; font-family: monospace; font-size: 12px; }
+        .btn-pop.agree { background: #ff4500; border-color: #ff4500; }
+        .btn-pop.agree:hover { background: #ff6347; }
+        .btn-pop.decline:hover { background: #444; color: #ff3333; }
+
+        /* Позиции окон на экране */
+        #agreementWindow { top: 20px; left: 20px; border-left: 4px solid #ff4500; }
+        #cookieWindow { bottom: 20px; right: 20px; border-right: 4px solid #00ff00; }
+
+        /* Скрытый текст лицензии, который разворачивается */
+        #fullText { display: none; background: #151515; border: 1px solid #333; padding: 10px; margin-top: 10px; max-height: 150px; overflow-y: auto; text-align: left; font-size: 11px; color: #888; }
+        .link-license { color: #00ff00; text-decoration: underline; cursor: pointer; }
+
+        .highlight { color: #ff4500; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="welcome-container">
     <h1>☢️ СИМУЛЯТОР СБОРКИ ФРАНКЕНШТЕЙНА ☢️</h1>
-    <p>У тебя в кармане всего 9 500 рублей, украденных у мамы из заначки. Этого не хватит даже на самый всратый комп на Авито. Придется искать инвесторов...</p>
+    <p>У тебя в кармане всего 12 500 рублей, паяльник и дикое желание поиграть. Этого впритык хватит на самую нищую сборку на Авито, если ни разу не ошибешься. Готов рискнуть?</p>
     
-    <div class="ad-zone">
-        <img src="ad.png" alt="Официальный спонсор">
-    </div>
-
-    <a href="configurator.html" class="btn-start">ИДТИ НА РЫНОК ЖЕЛЕЗА →</a>
+    <a href="configurator.html" id="realStartBtn" class="btn-start">ИДТИ НА РЫНОК ЖЕЛЕЗА →</a>
 </div>
+
+<div id="agreementWindow" class="pop-window">
+    <div class="pop-title">📄 Юридическая формальность</div>
+    <div>
+        Для доступа к симулятору необходимо подписать <span class="link-license" onclick="toggleLicense()">Пользовательское соглашение</span>.
+        <div id="fullText">
+            Настоящим соглашением вы передаете все свое движимое и недвижимое имущество, наличные деньги, а также <span class="highlight">свою бессмертную душу</span> в вечную собственность Разработчика. Разработчик вправе продать вашу душу дьяволу в обмен на рабочий блок питания KCAS. Решение окончательное, возврату не подлежит.
+        </div>
+    </div>
+    <div class="pop-buttons">
+        <button class="btn-pop decline" onclick="declineSoul()">Отказаться</button>
+        <button class="btn-pop agree" onclick="acceptSoul()">Согласен на всё</button>
+    </div>
+</div>
+
+<div id="cookieWindow" class="pop-window">
+    <div class="pop-title">🍪 Нам нужны твои куки</div>
+    <div>
+        Мы используем файлы cookie, чтобы собирать данные о твоем уровне отчаяния и продавать их китайским заводам по производству рефабнутых видеокарт.
+    </div>
+    <div class="pop-buttons">
+        <button class="btn-pop agree" onclick="acceptCookies()">ОК, следите</button>
+    </div>
+</div>
+
+<script>
+    let soulAccepted = false;
+    let cookiesAccepted = false;
+
+    function toggleLicense() {
+        const txt = document.getElementById('fullText');
+        txt.style.display = txt.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function acceptSoul() {
+        soulAccepted = true;
+        document.getElementById('agreementWindow').style.display = 'none';
+        checkPermissions();
+    }
+
+    function declineSoul() {
+        alert("Без души вход воспрещен. Подумаешь, какая ценность, жми 'Согласен'.");
+    }
+
+    function acceptCookies() {
+        cookiesAccepted = true;
+        document.getElementById('cookieWindow').style.display = 'none';
+        checkPermissions();
+    }
+
+    function checkPermissions() {
+        if (soulAccepted && cookiesAccepted) {
+            const startBtn = document.getElementById('realStartBtn');
+            startBtn.classList.add('active');
+            startBtn.innerText = "ДОСТУП РАЗРЕШЕН. НА РЫНОК →";
+        }
+    }
+</script>
 
 </body>
 </html>
